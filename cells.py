@@ -72,3 +72,5 @@ for j in range(0, len(co_ch_user_r)):
     co_ch_user_position.append([co_ch_user_r[j]*np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j]*np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
     ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=0.3)
 plt.show()
+
+#Continuar con la programación
