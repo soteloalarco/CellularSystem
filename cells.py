@@ -1,6 +1,7 @@
 import numpy as np
 import math as mth
 import matplotlib.pyplot as plt
+#Librería para dibujar hexagonos
 from matplotlib.patches import RegularPolygon
 import random
 
