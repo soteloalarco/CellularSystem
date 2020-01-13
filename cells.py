@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon
 import random
 
-#aahh perro
+#aahh  2
 cluster_size = 4
 r_cell = 5
 sec = 1
