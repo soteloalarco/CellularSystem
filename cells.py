@@ -109,7 +109,45 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
             for i in range(0, len(simulacion.Llegadas)):
                 if simulacion.Llegadas[i].processed:
                     print(entorno.now, " Llegada de usuario", simulacion.Llegadas[i].value)
+
                     # Posicionar usuario
+
+                    # Determinación del sector a simular en el snapshot
+                    num_sectors = [6, 3, 1]
+                    auxpi3 = mth.pi / 3
+                    phi_BW = [1 * auxpi3, 2 * auxpi3, 6 * auxpi3]
+
+                    # Se selecciona un sector aleatoriamente
+                    sector = random.randint(1, num_sectors[sec - 1])
+                    phi_center = [[-mth.pi, -(2 / 3) * mth.pi, -mth.pi / 3, 0, mth.pi / 3, (2 / 3) * mth.pi],
+                                  [-mth.pi, -mth.pi / 3, mth.pi / 3, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
+
+                    num_celdas = 7
+
+                    # Determinación de la celda para la llegada del usuario
+                    celda_a_posicionar = random.randint(1, num_celdas)
+
+                    if celda_a_posicionar == 1:
+                        # Llegará a la celda central
+                        # y se establecen los moviles dentro del sector seleccionado
+                        des_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
+                        des_user_r = mth.sqrt(np.random.uniform(0, 1) * (r_cell ** 2))
+
+                        # Ubicacion [X,Y] del móvil en la celda central
+                        des_user_position = [np.cos(des_user_beta) * des_user_r, np.sin(des_user_beta) * des_user_r]
+                        ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
+
+                    else:
+                        # Llegará a cualquiera de las 6 celdas co canal interferentes
+                        # Se establecen los moviles co canal dentro del sector seleccionado de las celdas co canal
+                        co_ch_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
+                        co_ch_user_r = np.sqrt(np.random.uniform(0, 1) * r_cell
+
+                        # Ubicacion [X,Y] de los móviles en las celdas co canal
+                        co_ch_user_position = [co_ch_user_r * np.cos(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][0], co_ch_user_r * np.sin(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][1]]
+                        ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=0.3)
+
+
                     del simulacion.Llegadas[i]
                     break
 
@@ -133,46 +171,6 @@ def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
 def condiciondeParo(terminarSimulacion, simulacion):
    if simulacion.contadorLlegadas == simulacion.umbralArribos:
       terminarSimulacion.succeed()
-
-
-
-# Determinación del sector a simular en el snapshot
-num_sectors = [6, 3, 1]
-auxpi3 = mth.pi/3
-phi_BW = [1*auxpi3, 2*auxpi3, 6*auxpi3]
-
-# Se selecciona un sector aleatoriamente
-sector = random.randint(1, num_sectors[sec-1])
-phi_center =[ [-mth.pi, -(2/3)*mth.pi, -mth.pi/3, 0, mth.pi/3, (2/3)*mth.pi], [-mth.pi, -mth.pi/3, mth.pi/3, 0, 0, 0],[0, 0, 0, 0, 0, 0]]
-
-num_celdas = 7
-
-# Determinación de la celda para la llegada del usuario
-celda_a_posicionar = random.randint(1, num_celdas)
-
-if celda_a_posicionar==1:
-    # Llegará a la celda central
-    # y se establecen los moviles dentro del sector seleccionado
-    des_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
-    des_user_r = mth.sqrt(np.random.uniform(0, 1) * (r_cell ** 2))
-
-    # Ubicacion [X,Y] del móvil en la celda central
-    des_user_position = [np.cos(des_user_beta) * des_user_r, np.sin(des_user_beta) * des_user_r]
-    ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
-
-else:
-    # Llegará a cualquiera de las 6 celdas co canal interferentes
-    # Se establecen los moviles co canal dentro del sector seleccionado de las celdas co canal
-    co_ch_user_beta = np.random.uniform(0, 1, 6) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
-    co_ch_user_r = np.sqrt(np.random.uniform(0, 1, 6)) * r_cell
-
-    # Ubicacion [X,Y] de los móviles en las celdas co canal
-    co_ch_user_position = []
-    for j in range(0, len(co_ch_user_r)):
-        co_ch_user_position.append([co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0],
-                                    co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
-        ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=0.3)
-
 
 
 
