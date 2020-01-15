@@ -49,7 +49,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
         if simpy.events.AnyOf(entorno, simulacion.Llegadas):
             for i in range(0, len(simulacion.Llegadas)):
                 if simulacion.Llegadas[i].processed:
-                    print(entorno.now, "Llegada de usuario", simulacion.Llegadas[i].value)
+                    print(entorno.now, " Llegada de usuario", simulacion.Llegadas[i].value)
                     # Posicionar usuario
                     del simulacion.Llegadas[i]
                     break
@@ -66,7 +66,7 @@ def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
     if simpy.events.AnyOf(entorno, simulacion.Salidas):
         for i in range(0, len(simulacion.Salidas)):
             if simulacion.Salidas[i].processed:
-                print(entorno.now, "Salida de usuario", simulacion.Salidas[i].value)
+                print(entorno.now, " Salida de usuario", simulacion.Salidas[i].value)
                 # Quitar usuario del plano
                 del simulacion.Salidas[i]
                 break
@@ -137,6 +137,10 @@ for j in range(0, len(aux1)):
     ax.scatter(bs_position[j][0]/2, bs_position[j][1]/2, c='k', alpha=0.5)
 
 
+# Ploteo de figura
+plt.show()
+
+
 #% Determinación del sector a simular en el snapshot
 num_sectors = [6, 3, 1]
 auxpi3 = mth.pi/3
@@ -165,8 +169,7 @@ for j in range(0, len(co_ch_user_r)):
     co_ch_user_position.append([co_ch_user_r[j]*np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j]*np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
     ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=0.3)
 
-# Ploteo de figura
-plt.show()
+
 
 
 # Inicialización de la simulación
