@@ -1,16 +1,22 @@
 import numpy as np
 import math as mth
+import cmath as cmth
 import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon
 import random
 
-#aahh  3
-cluster_size = 4
-r_cell = 5
-sec = 1
-# Ubicación de las estaciones base (La célula central se encuentra en x=0 y y=0)
+# variables a ingresar al inicio de la simulación
+cluster_size = 4 # número de celdas por cluster
+r_cell = 5 # radio de las células
+sec = 1 # 1 para 6 sectores, 2 para 3 sectores y 3 para 1 sector
+n_path = 2 # exponente de pathloss
 
-# Ubicación angular de la cécula central de cada cluster de tier 1
+# ===== Pre-defined simulation parameters
+P_BS = 0 # BS transmitter power (in dBW)
+P_MS = 0 # MS transmitter power (in dBW)
+K = 1 # constant in the link equation
+
+# Ubicación angular de la célula central de cada cluster de tier 1
 theta_N = [0, mth.pi/6, 0, mth.pi/6, mth.asin(1/(2*mth.sqrt(7)))]
 # distancia angular entre el centro de las 6 células de tier 1
 aux1= np.arange(0, 6, 1)
@@ -39,6 +45,7 @@ hex = RegularPolygon((0, 0), numVertices=6, radius=r_cell, orientation=np.radian
 ax.scatter(0, 0, c='k', alpha=0.5)
 ax.add_patch(hex)
 
+#dibujar anillo del medio sólo de forma ilustrativa
 for j in range(0, len(aux1)):
     hex = RegularPolygon((bs_position[j][0]/2, bs_position[j][1]/2), numVertices=6, radius=r_cell, orientation=np.radians(30),facecolor="blue", alpha=0.2, edgecolor='g')
 
@@ -59,18 +66,34 @@ phi_center =[ [-mth.pi, -(2/3)*mth.pi, -mth.pi/3, 0, mth.pi/3, (2/3)*mth.pi], [-
 des_user_beta = np.random.uniform(0, 1)*phi_BW[sec-1] + phi_center[sec-1][sector-1]
 des_user_r = mth.sqrt(np.random.uniform(0, 1)*(r_cell**2))
 
+#Convertimos coordenadas polares a cartesianas y graficamos
+des_user_position = [np.cos(des_user_beta)*des_user_r, np.sin(des_user_beta)*des_user_r]
+ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
+
 #% --- Place co-channel mobiles within the selected sector of
 #% co-channel cells---
 co_ch_user_beta = np.random.uniform(0, 1, 6)*phi_BW[sec-1] + phi_center[sec-1][sector-1]
 co_ch_user_r = np.sqrt(np.random.uniform(0, 1, 6))*r_cell
 
-des_user_position = [np.cos(des_user_beta)*des_user_r, np.sin(des_user_beta)*des_user_r]
-ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
-
+#  Convertimos coordenadas polares a cartesianas y graficamos en los mobiles de las celulas interferentes
 co_ch_user_position=[]
 for j in range(0, len(co_ch_user_r)):
     co_ch_user_position.append([co_ch_user_r[j]*np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j]*np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
     ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=0.3)
 plt.show()
 
-#Continuar con la programación
+#the computation of the moments of the signals on the forward link
+# --- DESIRED USER ---
+m_S_fwd = P_BS - 10*K*n_path*mth.log10(des_user_r);
+
+# --- CO-CHANNEL USERS ---
+# --- Location of desired mobile with respect to
+# co-channel cells ---
+aux_01=[]
+beta_fwd=[]
+d_I_fwd=[]
+for i in range(0, 6):
+    aux_01.append(complex(des_user_position[0]- bs_position[i][0], des_user_position[1]- bs_position[i][1]))
+    beta_fwd.append(cmth.polar(aux_01[i])[1])
+    d_I_fwd.append(cmth.polar(aux_01[i])[0])
+
