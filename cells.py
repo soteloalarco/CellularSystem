@@ -6,6 +6,81 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon
 import random
 
+
+
+class Usuario(object):
+    """Esta clase representa a un usuario"""
+
+    # Definición de constructor
+    def __init__(self, entorno, Lambda, Mu):
+        self.entorno = entorno
+        self.Lambda = Lambda
+        self.Mu = Mu
+
+    # Definicion de Métodos
+    def procesarLlegada(self, Lambda):
+        return random.expovariate(Lambda)
+        # return np.random.exponential(1 / Lambda)
+
+    def procesarSalida(self, Mu):
+        return random.expovariate(1 / Mu)
+        # return np.random.exponential(Mu)
+
+class Simulacion(object):
+
+    """Esta clase representa a una Simulación"""
+    contadorLlegadas = 0
+    contadorSalidas = 0
+    umbralArribos = 0
+    # Lista de eventos de las llegadas de usuarios
+    Llegadas= []
+    # Lista de eventos de las salidas de usuarios
+    Salidas= []
+
+def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion):
+    while True:
+        # Se calendariza la llegada de un usuario
+        tiempoLlegada = entorno.timeout(usuario.procesarLlegada(usuario.Lambda))
+        simulacion.Llegadas.append(tiempoLlegada)
+        simulacion.contadorLlegadas = simulacion.contadorLlegadas + 1
+        condiciondeParo(terminarSimulacion, simulacion)
+
+        yield tiempoLlegada
+        if simpy.events.AnyOf(entorno, simulacion.Llegadas):
+            for i in range(0, len(simulacion.Llegadas)):
+                if simulacion.Llegadas[i].processed:
+                    print(entorno.now, "Llegada de usuario", simulacion.Llegadas[i].value)
+                    # Posicionar usuario
+                    del simulacion.Llegadas[i]
+                    break
+
+        entorno.process(calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion))
+
+
+def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
+    tiempoSalida = entorno.timeout(usuario.procesarSalida(usuario.Mu))
+    simulacion.Salidas.append(tiempoSalida)
+    simulacion.contadorSalidas = simulacion.contadorSalidas + 1
+
+    yield tiempoSalida
+    if simpy.events.AnyOf(entorno, simulacion.Salidas):
+        for i in range(0, len(simulacion.Salidas)):
+            if simulacion.Salidas[i].processed:
+                print(entorno.now, "Salida de usuario", simulacion.Salidas[i].value)
+                # Quitar usuario del plano
+                del simulacion.Salidas[i]
+                break
+
+
+
+
+def condiciondeParo(terminarSimulacion, simulacion):
+   if simulacion.contadorLlegadas == simulacion.umbralArribos:
+      terminarSimulacion.succeed()
+
+
+
+
 # Tamaño del cluster
 cluster_size = 4
 # Radio de la celda
@@ -92,3 +167,19 @@ for j in range(0, len(co_ch_user_r)):
 
 # Ploteo de figura
 plt.show()
+
+
+# Inicialización de la simulación
+entorno = simpy.Environment()
+Lambda = .2
+Mu = 1
+# Creacion de objeto clase Usuario
+usuario = Usuario(entorno, Lambda, Mu)
+# Creacion de objeto clase Simulación
+simulacion = Simulacion()
+simulacion.umbralArribos = 30
+
+terminarSimulacion = simpy.events.Event(entorno)
+
+entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion))
+entorno.run(until=terminarSimulacion)
