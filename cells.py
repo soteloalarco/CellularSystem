@@ -1,5 +1,5 @@
 #Autores: Fernando Salazar y Rolando Sotelo enero 2020
-
+import sys
 import numpy as np
 import math as mth
 import simpy
@@ -59,6 +59,7 @@ class Simulacion(object):
     Llegadas= []
     # Lista de eventos de las salidas de usuarios
     Salidas= []
+    probabilidad_Bloqueo = 0
 
 
 def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
@@ -136,7 +137,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
         if simpy.events.AnyOf(entorno, simulacion.Llegadas):
             for i in range(0, len(simulacion.Llegadas)):
                 if simulacion.Llegadas[i].processed:
-                    print(entorno.now, " Llegada de usuario", simulacion.Llegadas[i].value)
+                    #print(entorno.now, " Llegada de usuario", simulacion.Llegadas[i].value)
 
                     # Posicionar usuario
 
@@ -170,7 +171,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, 0, des_user_position, False])
                         # Verificar si hay disponibilidad
                         if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
-                            print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
+                            #print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
                             for j in range(0, usuario.capacidadRecurso):
                                 # estacion base 0 / lista recursos 3 / recurso i
                                 if estacionesbase.ListaEstacionesBase[0][3][j] == [0, 0]:
@@ -181,7 +182,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                     break
 
                         elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
-                            print("No hay suficientes recursos")
+                            #print("No hay suficientes recursos")
                             simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
 
 
@@ -197,7 +198,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, celda_a_posicionar, co_ch_user_position, False])
                         # Verificar si hay disponibilidad
                         if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
-                            print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
+                            #print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
                             for j in range(0, usuario.capacidadRecurso):
                                 # estacion base 0 / lista recursos 3 / recurso i
                                 if estacionesbase.ListaEstacionesBase[celda_a_posicionar][3][j] == [0, 0]:
@@ -207,7 +208,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                     estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] = estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] + 1
                                     break
                         #elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
-                        #    print("No hay suficientes recursos")
+                        #    #print("No hay suficientes recursos")
                         #    simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
 
 
@@ -227,7 +228,7 @@ def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
     if simpy.events.AnyOf(entorno, simulacion.Salidas):
         for i in range(0, len(simulacion.Salidas)):
             if simulacion.Salidas[i].processed:
-                print(entorno.now, " Salida de usuario", simulacion.Salidas[i].value)
+                #print(entorno.now, " Salida de usuario", simulacion.Salidas[i].value)
                 # Quitar usuario del plano
                 # Identificar a usuario como muerto
                 usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][3] = True
@@ -252,7 +253,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 
 # Inicialización de la simulación
 entorno = simpy.Environment()
-Lambda = 200
+Lambda = float(sys.argv[1])
 Mu = 1
 # Creacion de objeto clase Usuario
 usuario = Usuario(entorno, Lambda, Mu)
@@ -261,9 +262,12 @@ estacionesbase = EstacionBase(entorno, 70)
 
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
-simulacion.umbralArribos = 1000
+simulacion.umbralArribos = int(sys.argv[2])
 
 terminarSimulacion = simpy.events.Event(entorno)
 
 entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
 entorno.run(until=terminarSimulacion)
+
+simulacion.probabilidad_Bloqueo = simulacion.contadorBloqueoXRecurso / simulacion.contadorLlegadasC1
+print(simulacion.probabilidad_Bloqueo)
