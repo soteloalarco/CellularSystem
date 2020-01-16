@@ -7,6 +7,24 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon # Librería para dibujar los hexagonos
 import random
 
+class EstacionBase(object):
+    """Esta clase representa a una estación base"""
+
+    def __init__(self,entorno,capacidad):
+        self.entorno =entorno
+        self.capacidad = capacidad
+        self.Resource=simpy.Resource(entorno, capacidad)
+
+    def obtenerusuariosconectados(self):
+        return self.Resource.count
+
+    def estadisticas(self):
+        print('%d de %d canales están asignados.' % (self.Resource.count, self.Resource.capacity))
+
+    # Lista de estaciones base
+    # ListaEstacionesBase = [ID, posicion, contador_UE, [CH0,CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9]]
+    #donde CH lista anidada [Tipo, distancia a UE]
+    ListaEstacionesBase = []
 
 
 class Usuario(object):
@@ -25,7 +43,8 @@ class Usuario(object):
 
     def procesarSalida(self, Mu): # Duración del servicio prestado a cada dispositivo
         return random.expovariate(1 / Mu) # Distribución exponencial
-
+    #ListausuariosMoviles=[Id, posicion, BS, M]
+    ListaUsuariosMoviles=[]
 
 class Simulacion(object):
 
@@ -38,7 +57,7 @@ class Simulacion(object):
     # Lista de eventos de las salidas de usuarios
     Salidas= []
 
-def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion):
+def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
 
     # Tamaño del cluster
     cluster_size = 4 # 1, 3, 4 o 7 celdas
@@ -47,6 +66,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
     r_cell_plot= r_cell/200
     #  Sectorización (1 -> 60 grados, 2 -> 120 grados, 3 -> omnidireccional)
     sec = 3
+    num_celdas = 6  # Tomando en cuenta el cero
 
     # Ubicación de las estaciones base (la celda central se encuentra en x=0 y y=0)
     # Ubicación (angular) de la cécula co-canal de cada cluster del primer anillo de interferencia
@@ -65,6 +85,10 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
                                    # a partir del tamaño del cluster y el radio de cada célula
         bs_position.append([(mth.sqrt(3 * cluster_size) * r_cell * np.cos(theta[i] + theta_N[ind])),
                             (mth.sqrt(3 * cluster_size) * r_cell * np.sin(theta[i] + theta_N[ind]))])
+
+    for i in range (0, num_celdas+1):
+        estacionesbase.ListaEstacionesBase.append([i, bs_position[i], 0, [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]])
+
 
 
     # Creación de figura a plotear
@@ -123,7 +147,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
                     phi_center = [[-mth.pi, -(2 / 3) * mth.pi, -mth.pi / 3, 0, mth.pi / 3, (2 / 3) * mth.pi],
                                   [-mth.pi, -mth.pi / 3, mth.pi / 3, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
-                    num_celdas = 6      # Tomando en cuenta el cero
+
 
                     # Determinación de la celda para la llegada del usuario
                     celda_a_posicionar = random.randint(0, num_celdas)
@@ -138,6 +162,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
                         # Ubicacion [X,Y] del móvil en la celda central
                         des_user_position = [np.cos(des_user_beta) * des_user_r, np.sin(des_user_beta) * des_user_r]
                         ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
+                        usuario.ListaUsuariosMoviles.append([i, 0, des_user_position, False])
+                        estacionesbase.ListaEstacionesBase[0][3] = [i, des_user_r]
 
                     else:
                         # Llegará a cualquiera de las 6 celdas co canal interferentes
@@ -148,6 +174,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion)
                         # Ubicacion [X,Y] de los móviles en las celdas co canal
                         co_ch_user_position = [co_ch_user_r * np.cos(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][0], co_ch_user_r * np.sin(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][1]]
                         ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=0.3)
+                        usuario.ListaUsuariosMoviles.append([simulacion.contadorLlegadas, celda_a_posicionar, co_ch_user_position, False])
 
 
                     del simulacion.Llegadas[i]
@@ -182,11 +209,14 @@ Lambda = 2
 Mu = 1
 # Creacion de objeto clase Usuario
 usuario = Usuario(entorno, Lambda, Mu)
+# Creación de objetos Estaciones Base, tanto la central como el primer anillo de interferencia
+estacionesbase = EstacionBase(entorno, 70)
+
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
 simulacion.umbralArribos = 200
 
 terminarSimulacion = simpy.events.Event(entorno)
 
-entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, terminarSimulacion))
+entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
 entorno.run(until=terminarSimulacion)
