@@ -1,6 +1,7 @@
 #Este script realiza la simulacion M/M tomando como métrica de paro un número tope de arribos
 #Importación de librerías
 import os
+from timeit import default_timer as timer
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import factorial
@@ -62,6 +63,11 @@ simulacion.a = np.linspace(float(a1), float(a2), int(a3))#(0.01, 22, 100)
 simulacion.umbralTopeArribos = int(input('Ingresa el umbral tope de arribos a generar: '))#10000
 #os.system('cls')
 print("  Simulando  ...")
+inicio = timer()
 #Ejecución de funciones
 simulacion_a(simulacion)
 graficasProbBloq(simulacion)
+
+fin = timer()
+tiempo_TotalSimulacion = fin - inicio
+print('Tiempo total de simulacion en segundos: ', tiempo_TotalSimulacion, '  en minutos: ', tiempo_TotalSimulacion/60, '  y en horas: ', tiempo_TotalSimulacion/60/60)

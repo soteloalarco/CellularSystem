@@ -244,6 +244,10 @@ def calendarizarSalida(entorno, usuario, simulacion):
                         break
 
                 del simulacion.Salidas[i]
+                for k in range(0, len(usuario.ListaUsuariosMoviles)):
+                    if usuario.ListaUsuariosMoviles[k][0]==simulacion.Salidas[i].value:
+                        del usuario.ListaUsuariosMoviles[k]
+                        break
                 break
 
 def condiciondeParo(terminarSimulacion, simulacion):
