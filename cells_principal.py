@@ -42,21 +42,7 @@ def graficasProbBloq(simulacion):
             return (B(s - 1, a)) / ((s/a) + B(s - 1, a))
 
     y1 = [B(10, xi) for xi in simulacion.a]
-    plt.plot(simulacion.a, y1, 'k', label="FormErlang Teórica 1")
-
-    #Formula Erlang B tomando solamente ultimo estado
-    def Pe(s, a, j):
-        A=(a**j)/factorial(j)
-
-        sum=0
-        for k in range(0, s+1):
-            sum=sum+(a**k)/factorial(k)
-
-        return A/sum
-
-    y2 = [Pe(10, xi, 10) for xi in simulacion.a]
-    plt.plot(simulacion.a, y2, 'y', label="FormErlang Teórica 2")
-
+    plt.plot(simulacion.a, y1, 'k', label="FormErlang Teórica")
 
     plt.xlabel('a (tráfico ofrecido)')
     plt.ylabel('$P_B$ (probabilidad de bloqueo)')
