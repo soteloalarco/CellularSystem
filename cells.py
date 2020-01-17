@@ -215,11 +215,11 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                     del simulacion.Llegadas[i]
                     break
 
-        entorno.process(calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion))
+        entorno.process(calendarizarSalida(entorno, usuario, simulacion))
 
 
 
-def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
+def calendarizarSalida(entorno, usuario, simulacion):
     tiempoSalida = entorno.timeout(usuario.procesarSalida(usuario.Mu), simulacion.contadorSalidas)
     simulacion.Salidas.append(tiempoSalida)
     simulacion.contadorSalidas = simulacion.contadorSalidas + 1
