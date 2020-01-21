@@ -74,7 +74,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
     num_celdas = 6  # Tomando en cuenta el cero
 
     # Ubicación de las estaciones base (la celda central se encuentra en x=0 y y=0)
-    # Ubicación (angular) de la cécula co-canal de cada cluster del primer anillo de interferencia
+    # Ubicación (angular) de la célda co-canal de cada cluster del primer anillo de interferencia
     theta_N = [0, mth.pi / 6, 0, mth.pi / 6, mth.asin(1 / (2 * mth.sqrt(7)))]
 
     # Distancia angular entre el centro de las 6 células del primer anillo de interferencia
@@ -151,14 +151,13 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                     phi_center = [[-mth.pi, -(2 / 3) * mth.pi, -mth.pi / 3, 0, mth.pi / 3, (2 / 3) * mth.pi],
                                   [-mth.pi, -mth.pi / 3, mth.pi / 3, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
-
-
+                    simulacion.contadorLlegadasC1 = simulacion.contadorLlegadasC1 + 1
                     # Determinación de la celda para la llegada del usuario
-                    #celda_a_posicionar = random.randint(0, num_celdas)
-                    celda_a_posicionar = 0
+                    celda_a_posicionar = random.randint(0, num_celdas)
+                    #celda_a_posicionar = 0
 
                     if celda_a_posicionar == 0:
-                        simulacion.contadorLlegadasC1=simulacion.contadorLlegadasC1+1
+
                         # Llegará a la celda central
                         # y se establecen los moviles dentro del sector seleccionado
                         des_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
@@ -208,9 +207,9 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                     # aumentar contador
                                     estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] = estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] + 1
                                     break
-                        #elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
-                        #    #print("No hay suficientes recursos")
-                        #    simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
+                        elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
+                            #print("No hay suficientes recursos")
+                            simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
 
 
                     del simulacion.Llegadas[i]
@@ -242,12 +241,15 @@ def calendarizarSalida(entorno, usuario, simulacion):
                         # bajar contador
                         estacionesbase.ListaEstacionesBase[usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][1]][2] = estacionesbase.ListaEstacionesBase[usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][1]][2] - 1
                         break
+                #Limpiar lista de usuario que salio del sistema
+                for k in range(0, len(usuario.ListaUsuariosMoviles)):
+                    if usuario.ListaUsuariosMoviles[k]:
+                        if usuario.ListaUsuariosMoviles[k][0]==simulacion.Salidas[i].value:
+                            usuario.ListaUsuariosMoviles[k].clear()
+                            break
+
 
                 del simulacion.Salidas[i]
-                for k in range(0, len(usuario.ListaUsuariosMoviles)):
-                    if usuario.ListaUsuariosMoviles[k][0]==simulacion.Salidas[i].value:
-                        del usuario.ListaUsuariosMoviles[k]
-                        break
                 break
 
 def condiciondeParo(terminarSimulacion, simulacion):
