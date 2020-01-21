@@ -2,6 +2,7 @@
 import sys
 import numpy as np
 import math as mth
+import cmath as cmth
 import simpy
 import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon # Librería para dibujar los hexagonos
@@ -195,6 +196,9 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         co_ch_user_r = np.sqrt(np.random.uniform(0, 1)) * r_cell
                         # Ubicacion [X,Y] de los móviles en las celdas co canal
                         co_ch_user_position = [co_ch_user_r * np.cos(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][0], co_ch_user_r * np.sin(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][1]]
+                        aux_01=complex(co_ch_user_position[0], co_ch_user_position[1])
+                        beta_fwd= cmth.polar(aux_01)[1]
+                        d_I_fwd= cmth.polar(aux_01)[0]  # estas son las distancias de los dispositivos a la estación base, aunque
                         #ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=0.3)
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, celda_a_posicionar, co_ch_user_position, False])
                         # Verificar si hay disponibilidad
@@ -204,7 +208,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                 # estacion base 0 / lista recursos 3 / recurso i
                                 if estacionesbase.ListaEstacionesBase[celda_a_posicionar][3][j] == [0, 0]:
                                     # asignar conexion
-                                    estacionesbase.ListaEstacionesBase[celda_a_posicionar][3][j] = [simulacion.Llegadas[i].value, co_ch_user_r]
+                                    estacionesbase.ListaEstacionesBase[celda_a_posicionar][3][j] = [simulacion.Llegadas[i].value, d_I_fwd]
                                     # aumentar contador
                                     estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] = estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] + 1
                                     break
