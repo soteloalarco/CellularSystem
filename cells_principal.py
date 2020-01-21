@@ -14,6 +14,7 @@ class Simulacion():
     a = []
     umbralTopeArribos = 0
     y = []
+    numceldas = 7
 
 
 # Simulacion para un conjunto de valores de a
@@ -42,7 +43,8 @@ def graficasProbBloq(simulacion):
         else:
             return (B(s - 1, a)) / ((s/a) + B(s - 1, a))
 
-    y1 = [B(10, xi) for xi in simulacion.a]
+    # Se hace la compensación de a de acuerdo a el numero de celdas establecidas
+    y1 = [B(10, xi/simulacion.numceldas) for xi in simulacion.a]
     plt.plot(simulacion.a, y1, 'k', label="FormErlang Teórica")
 
     plt.xlabel('a (tráfico ofrecido)')

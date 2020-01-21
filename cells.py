@@ -51,9 +51,9 @@ class Simulacion(object):
 
     """Esta clase representa a una Simulación de eventos discretos"""
     contadorLlegadas = 0
-    contadorLlegadasC1=0
+    countLlegadas = np.zeros(7)
     contadorSalidas = 0
-    contadorBloqueoXRecurso = 0
+    contadorBloqueoXRecurso = np.zeros(7)
     umbralArribos = 0 # Número de arribos a simular (CONDICIÓN DE PARO)
     # Lista de eventos de las llegadas de usuarios
     Llegadas= []
@@ -151,13 +151,12 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                     phi_center = [[-mth.pi, -(2 / 3) * mth.pi, -mth.pi / 3, 0, mth.pi / 3, (2 / 3) * mth.pi],
                                   [-mth.pi, -mth.pi / 3, mth.pi / 3, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
-                    simulacion.contadorLlegadasC1 = simulacion.contadorLlegadasC1 + 1
+
                     # Determinación de la celda para la llegada del usuario
                     celda_a_posicionar = random.randint(0, num_celdas)
-                    #celda_a_posicionar = 0
 
                     if celda_a_posicionar == 0:
-
+                        simulacion.countLlegadas[celda_a_posicionar]=simulacion.countLlegadas[celda_a_posicionar]+1
                         # Llegará a la celda central
                         # y se establecen los moviles dentro del sector seleccionado
                         des_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
@@ -171,6 +170,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, 0, des_user_position, False])
                         # Verificar si hay disponibilidad
                         if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
+
                             #print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
                             for j in range(0, usuario.capacidadRecurso):
                                 # estacion base 0 / lista recursos 3 / recurso i
@@ -183,11 +183,12 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
                         elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
                             #print("No hay suficientes recursos")
-                            simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
+                            simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
 
 
                     else:
                         # Llegará a cualquiera de las 6 celdas co canal interferentes
+                        simulacion.countLlegadas[celda_a_posicionar] = simulacion.countLlegadas[celda_a_posicionar] + 1
                         # Se establecen los moviles co canal dentro del sector seleccionado de las celdas co canal
                         co_ch_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
                         # Distancia de la estación base al usuario
@@ -209,7 +210,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                     break
                         elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
                             #print("No hay suficientes recursos")
-                            simulacion.contadorBloqueoXRecurso = simulacion.contadorBloqueoXRecurso + 1
+                            simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
 
 
                     del simulacion.Llegadas[i]
@@ -261,6 +262,8 @@ def condiciondeParo(terminarSimulacion, simulacion):
 # Inicialización de la simulación
 entorno = simpy.Environment()
 Lambda = float(sys.argv[1])
+#Lambda = 22
+
 Mu = 1
 # Creacion de objeto clase Usuario
 usuario = Usuario(entorno, Lambda, Mu)
@@ -270,11 +273,12 @@ estacionesbase = EstacionBase(entorno, 70)
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
 simulacion.umbralArribos = int(sys.argv[2])
+#simulacion.umbralArribos = 15000
 
 terminarSimulacion = simpy.events.Event(entorno)
 
 entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
 entorno.run(until=terminarSimulacion)
 
-simulacion.probabilidad_Bloqueo = simulacion.contadorBloqueoXRecurso / simulacion.contadorLlegadasC1
+simulacion.probabilidad_Bloqueo = simulacion.contadorBloqueoXRecurso[0] / simulacion.countLlegadas[0]
 print(simulacion.probabilidad_Bloqueo)
