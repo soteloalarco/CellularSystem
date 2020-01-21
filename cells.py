@@ -185,14 +185,18 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                     # Verificar SIR
                                     des_sig = des_user_r ** (-apd)
                                     I_sig = 0
-                                    for i in range(1, 7):  # Recorremos las 6 celulas interferentes
+                                    for k in range(1, 7):  # Recorremos las 6 celulas interferentes
                                         # celula i / lista recursos 3 / recurso /distancia a la BS0
-                                        distaux = estacionesbase.ListaEstacionesBase[i][3][j][1]
-                                        I_sig = I_sig + distaux ** (-apd)
+                                        distaux = estacionesbase.ListaEstacionesBase[k][3][j][1]
+                                        if distaux>0:
+                                            I_sig = I_sig + distaux ** (-apd)
+                                    if I_sig>0:
+                                        calculoSIR = 10 * mth.log10(des_sig / I_sig)
 
-                                    calculoSIR = 10 * mth.log10(des_sig / I_sig)
+                                    else:
+                                        calculoSIR=100000
 
-                                    if calculoSIR < simulacion.umbralSIR:
+                                    if calculoSIR > simulacion.umbralSIR:
                                         # asignar conexion
                                         estacionesbase.ListaEstacionesBase[0][3][j] = [simulacion.Llegadas[i].value,des_user_r]
                                         # aumentar contador de uso de canal
@@ -221,8 +225,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         co_ch_user_position = [co_ch_user_r * np.cos(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][0], co_ch_user_r * np.sin(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][1]]
                         #distancia de los dispositivos a la estación base central
                         aux_01=complex(co_ch_user_position[0], co_ch_user_position[1])
-                        beta_fwd=cmth.polar(aux_01[i])[1]
-                        d_I_fwd=cmth.polar(aux_01[i])[0]
+                        beta_fwd=cmth.polar(aux_01)[1]
+                        d_I_fwd=cmth.polar(aux_01)[0]
                         #ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=0.3)
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, celda_a_posicionar, co_ch_user_position, False])
                         # Verificar si hay disponibilidad
@@ -310,4 +314,4 @@ entorno.run(until=terminarSimulacion)
 
 simulacion.probabilidad_Bloqueo = simulacion.contadorBloqueoXRecurso[0] + simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]
 simulacion.probabilidad_Bloqueo_SIR = simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]
-print(simulacion.probabilidad_Bloqueo)
+print(simulacion.probabilidad_Bloqueo,",",simulacion.probabilidad_Bloqueo_SIR)
