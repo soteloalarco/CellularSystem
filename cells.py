@@ -56,6 +56,9 @@ class Simulacion(object):
     Llegadas= []
     # Lista de eventos de las salidas de usuarios
     Salidas= []
+    # Creación de figura a plotear
+    fig, ax = plt.subplots(1)
+    ax.set_aspect('equal')
 
 def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
 
@@ -86,36 +89,34 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
         bs_position.append([(mth.sqrt(3 * cluster_size) * r_cell * np.cos(theta[i] + theta_N[ind])),
                             (mth.sqrt(3 * cluster_size) * r_cell * np.sin(theta[i] + theta_N[ind]))])
 
-    for i in range (0, num_celdas+1):
+    for i in range (0, num_celdas):
         estacionesbase.ListaEstacionesBase.append([i, bs_position[i], 0, [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]])
 
 
 
-    # Creación de figura a plotear
-    fig, ax = plt.subplots(1)
-    ax.set_aspect('equal')
+
 
     # CREACIÓN DE HEXÁGONOS
     # Se forma y dibuja el hexágono central en x=0, y=0 en color azul, esta es la célula a analizar
     hex = RegularPolygon((0, 0), numVertices=6, radius=r_cell, orientation=np.radians(30), facecolor="blue", alpha=0.2,
                          edgecolor='k')
-    ax.add_patch(hex) # se dibuja el hexagono
+    simulacion.ax.add_patch(hex) # se dibuja el hexagono
     # Se dibuja un punto negro representando a la estación base
-    ax.scatter(0, 0, c='k', alpha=0.5)
+    simulacion.ax.scatter(0, 0, c='k', alpha=0.5)
 
     for j in range(0, len(aux1)):
         # Se forman y dibujan los hexágonos del primer anillo de interferencia en color rojo
         hex = RegularPolygon((bs_position[j][0], bs_position[j][1]), numVertices=6, radius=r_cell,
                              orientation=np.radians(30), facecolor="red", alpha=0.2, edgecolor='k')
-        ax.add_patch(hex)
+        simulacion.ax.add_patch(hex)
         # Se dibuja un punto negro representando a la estación base en cada celda
-        ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5)
+        simulacion.ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5)
 
     for j in range(0, len(aux1)):
         # Se forman y dibujan los hexágonos que rodean al anillo central a manera de referencia en color verde
         hex = RegularPolygon((bs_position[j][0] / 2, bs_position[j][1]/2), numVertices=6, radius=r_cell,
                              orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
-        ax.add_patch(hex)
+        simulacion.ax.add_patch(hex)
         # Se dibuja un punto negro representando a la estación base en cada celda
         #ax.scatter(bs_position[j][0] / 2, bs_position[j][1] / 2, c='k', alpha=0.5)
 
@@ -161,8 +162,13 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
                         # Ubicacion [X,Y] del móvil en la celda central
                         des_user_position = [np.cos(des_user_beta) * des_user_r, np.sin(des_user_beta) * des_user_r]
-                        ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=0.3)
-                        usuario.ListaUsuariosMoviles.append([i, 0, des_user_position, False])
+                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, marker='.')
+
+                        #Redibuja a manera de animación
+                        simulacion.fig.canvas.draw()
+                        simulacion.fig.canvas.flush_events()
+
+                        usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, 0, des_user_position, False])
                         estacionesbase.ListaEstacionesBase[0][3] = [i, des_user_r]
 
                     else:
@@ -173,14 +179,19 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         co_ch_user_r = np.sqrt(np.random.uniform(0, 1)) * r_cell
                         # Ubicacion [X,Y] de los móviles en las celdas co canal
                         co_ch_user_position = [co_ch_user_r * np.cos(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][0], co_ch_user_r * np.sin(co_ch_user_beta) + bs_position[celda_a_posicionar - 1][1]]
-                        ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=0.3)
-                        usuario.ListaUsuariosMoviles.append([simulacion.contadorLlegadas, celda_a_posicionar, co_ch_user_position, False])
+                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1, marker='.')
+
+                        # Redibuja a manera de animación
+                        simulacion.fig.canvas.draw()
+                        simulacion.fig.canvas.flush_events()
+                        usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, celda_a_posicionar, co_ch_user_position, False])
 
 
                     del simulacion.Llegadas[i]
                     break
 
         entorno.process(calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion))
+
 
 
 def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
@@ -194,7 +205,14 @@ def calendarizarSalida(entorno, usuario, simulacion, terminarSimulacion):
             if simulacion.Salidas[i].processed:
                 print(entorno.now, " Salida de usuario", simulacion.Salidas[i].value)
                 # Quitar usuario del plano
+                auxx = usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][0]
+                auxy = usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][1]
                 del simulacion.Salidas[i]
+
+                simulacion.ax.scatter(auxx, auxy, c='k', alpha=.7, marker='x')
+                # Redibuja a manera de animación
+                simulacion.fig.canvas.draw()
+                simulacion.fig.canvas.flush_events()
                 break
 
 def condiciondeParo(terminarSimulacion, simulacion):
@@ -205,7 +223,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 
 # Inicialización de la simulación
 entorno = simpy.Environment()
-Lambda = 2
+Lambda = 10
 Mu = 1
 # Creacion de objeto clase Usuario
 usuario = Usuario(entorno, Lambda, Mu)
@@ -214,7 +232,7 @@ estacionesbase = EstacionBase(entorno, 70)
 
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
-simulacion.umbralArribos = 200
+simulacion.umbralArribos = 300
 
 terminarSimulacion = simpy.events.Event(entorno)
 
