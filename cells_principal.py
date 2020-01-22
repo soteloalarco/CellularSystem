@@ -22,12 +22,13 @@ class Simulacion():
     Metricas = {}
 
 # Simulacion para un conjunto de valores de a
-def simulacion_a(a1, umbralTopeArribos=100):
+def simulacion_a(a1, umbralTopeArribos=5000):
     #Conversion del formato de salida
     output = subprocess.check_output('cells.py '+str(a1)+' '+str(umbralTopeArribos), shell=True)
     output1 = output.decode(sys.stdout.encoding)
     output2 = str((re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '', output1)).rstrip()).split(" , ")
-    return output2
+    output3 = np.array(output2, float)
+    return output3
 
 
 def creacionDiccionarios(simulacion):
@@ -37,11 +38,13 @@ def creacionDiccionarios(simulacion):
 
 # Graficas de Probabilidad de Bloqueo
 def graficasProbBloq(simulacion):
-    for i in range(0, simulacion.numMetricas):
-        simulacion.y = np.array(simulacion.Metricas['Metrica' + str(i)])
 
+    for i in range(0, simulacion.numMetricas):
         plt.figure(i)
-        plt.plot(simulacion.a, simulacion.y, 'g', label="FormErlang Simulada")
+        simulacion.y=np.array(simulacion.Metricas['Metrica' + str(i)][0])
+
+        #list_key_value = [ [k,v] for k, v in dict.items() ]
+        plt.plot(simulacion.a, simulacion.y , 'b', label="FormErlang Simulada")
         #Formula Erlang B Recursiva
         def B(s, a):
             if s==0:
@@ -49,16 +52,19 @@ def graficasProbBloq(simulacion):
             else:
                 return (B(s - 1, a)) / ((s/a) + B(s - 1, a))
 
+        if  i==0:
+            plt.ylabel('$P_B$ (probabilidad de bloqueo por recurso)')
+        elif i==1:
+            plt.ylabel('$P_B$ (probabilidad de bloqueo por SIR)')
+
         # Se hace la compensación de a de acuerdo a el numero de celdas establecidas
         y1 = [B(10, xi/simulacion.numceldas) for xi in simulacion.a]
-        plt.plot(simulacion.a, y1, 'k', label="FormErlang Teórica")
-
+        plt.plot(simulacion.a, y1, 'r', label="FormErlang Teórica")
         plt.xlabel('a (tráfico ofrecido)')
-        plt.ylabel('$P_B$ (probabilidad de bloqueo)')
         plt.title("Simulación Erlang B M/M/"+str(10))
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper right', borderaxespad=0.)
-
         plt.show()
+
 
 
 
@@ -89,6 +95,7 @@ if __name__ == '__main__':
 
     creacionDiccionarios(simulacion)
     for i in range(0, simulacion.numMetricas):
+        Z=[]
         for j in range(0, len(results)):
             Z.append(results[j][i])
         simulacion.Metricas['Metrica' + str(i)].append(Z)

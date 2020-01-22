@@ -294,6 +294,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 # Inicialización de la simulación
 entorno = simpy.Environment()
 Lambda = float(sys.argv[1])
+#Lambda = 100
 #Lambda = 22
 
 Mu = 1
@@ -305,6 +306,7 @@ estacionesbase = EstacionBase(entorno, 70)
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
 simulacion.umbralArribos = int(sys.argv[2])
+#simulacion.umbralArribos = 1000
 #simulacion.umbralArribos = 15000
 
 terminarSimulacion = simpy.events.Event(entorno)
@@ -312,6 +314,6 @@ terminarSimulacion = simpy.events.Event(entorno)
 entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
 entorno.run(until=terminarSimulacion)
 
-simulacion.probabilidad_Bloqueo = simulacion.contadorBloqueoXRecurso[0] + simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]
+simulacion.probabilidad_Bloqueo = (simulacion.contadorBloqueoXRecurso[0] + simulacion.contadorBloqueoXSIR[0] )/ simulacion.countLlegadas[0]
 simulacion.probabilidad_Bloqueo_SIR = simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]
 print(simulacion.probabilidad_Bloqueo,",",simulacion.probabilidad_Bloqueo_SIR)
