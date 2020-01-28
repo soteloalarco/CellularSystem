@@ -62,8 +62,8 @@ class Simulacion(object):
     Llegadas= []
     # Lista de eventos de las salidas de usuarios
     Salidas= []
-    probabilidad_Bloqueo = 0
-    probabilidad_Bloqueo_SIR = 0
+    probabilidad_Outage = 0
+    probabilidad_rechazo = 0
     # Creación de figura a plotear
     fig, ax = plt.subplots(1)
     ax.set_aspect('equal')
@@ -72,10 +72,10 @@ class Simulacion(object):
 def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
 
     # Tamaño del cluster
-    cluster_size = 7 # 1, 3, 4 o 7 celdas
+    cluster_size = 7# 1, 3, 4 o 7 celdas
     # Radio de la celda
     r_cell = 1000
-    r_cell_plot= r_cell/200
+    #r_cell_plot= r_cell/200
     #  Sectorización (1 -> 60 grados, 2 -> 120 grados, 3 -> omnidireccional)
     sec = 3
     num_celdas = 6  # Tomando en cuenta el cero
@@ -193,7 +193,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
 
                     # Determinación de la celda para la llegada del usuario
-                    celda_a_posicionar = random.randint(0, num_celdas)
+                    celda_a_posicionar = 0
 
                     if celda_a_posicionar == 0:
                         simulacion.countLlegadas[celda_a_posicionar]=simulacion.countLlegadas[celda_a_posicionar]+1
@@ -203,65 +203,77 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         # Distancia de la estación base al usuario
                         des_user_r = mth.sqrt(np.random.uniform(0, 1) * (r_cell ** 2))
 
+
+                        co_ch_user_beta = np.random.uniform(0, 1, 6) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
+                        co_ch_user_r = np.sqrt(np.random.uniform(0, 1, 6))*r_cell
+
+
                         # Ubicacion [X,Y] del móvil en la celda central
                         des_user_position = [np.cos(des_user_beta) * des_user_r, np.sin(des_user_beta) * des_user_r]
+
+
+
                         simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, marker='.')
                         #Animación de la simulacion
-                        simulacion.fig.canvas.draw()
-                        simulacion.fig.canvas.flush_events()
+                        d_I_fwd=[]
+                        co_ch_user_position = []
+                        for j in range(0, len(co_ch_user_r)):
+                            co_ch_user_position.append(
+                                [co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0],
+                                 co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
+                            aux_01 = complex(co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1])
+                            d_I_fwd.append(cmth.polar(aux_01)[0])
+                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,marker='.')
 
+                        #simulacion.fig.canvas.draw()
+                        #simulacion.fig.canvas.flush_events()
 
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, 0, des_user_position, False])
 
-                            # Verificar si hay disponibilidad
-                        if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
+                        # Verificar SIR
+                        des_sig = des_user_r ** (-apd)
+                        I_sig = 0
+                        for k in range(0, 6):  # Recorremos las 6 celulas interferentes
+                            # celula i / lista recursos 3 / recurso /distancia a la BS0
+                            distaux = d_I_fwd[k]
+                            if distaux > 0:
+                                I_sig = I_sig + distaux ** (-apd)
+                        if I_sig > 0:
+                            calculoSIR = 10 * mth.log10(des_sig / I_sig)
+                        else:
+                            calculoSIR = 10 * mth.log10(des_sig / I_sig)
 
-                            #print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
-                            for j in range(0, usuario.capacidadRecurso):
-                                # estacion base 0 / lista recursos 3 / recurso i
-                                if estacionesbase.ListaEstacionesBase[0][3][j] == [0, 0]:
+                        if calculoSIR > simulacion.umbralSIR:
+                            if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
 
-                                    # Verificar SIR
-                                    des_sig = des_user_r ** (-apd)
-                                    I_sig = 0
-                                    for k in range(1, 7):  # Recorremos las 6 celulas interferentes
-                                        # celula i / lista recursos 3 / recurso /distancia a la BS0
-                                        distaux = estacionesbase.ListaEstacionesBase[k][3][j][1]
-                                        if distaux>0:
-                                            I_sig = I_sig + distaux ** (-apd)
-                                    if I_sig>0:
-                                        calculoSIR = 10 * mth.log10(des_sig / I_sig)
-
-                                    else:
-                                        calculoSIR=100000
-
-                                    if calculoSIR > simulacion.umbralSIR:
+                                # print("SI hay recursos, se asignará recurso a ", simulacion.Llegadas[i].value)
+                                for j in range(0, usuario.capacidadRecurso):
+                                    # estacion base 0 / lista recursos 3 / recurso i
+                                    if estacionesbase.ListaEstacionesBase[0][3][j] == [0, 0]:
                                         # asignar conexion
-                                        estacionesbase.ListaEstacionesBase[0][3][j] = [simulacion.Llegadas[i].value,des_user_r]
+                                        estacionesbase.ListaEstacionesBase[0][3][j] = [simulacion.Llegadas[i].value, des_user_r]
                                         # aumentar contador de uso de canal
-                                        estacionesbase.ListaEstacionesBase[0][2] = estacionesbase.ListaEstacionesBase[0][2]+1
+                                        estacionesbase.ListaEstacionesBase[0][2] = estacionesbase.ListaEstacionesBase[0][2] + 1
+                                        break
+                            elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
+                                # print("No hay suficientes recursos")
+                                simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = \
+                                simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
+                                simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,
+                                                      marker='.')
+                                # Animación de la simulacion
+                                #simulacion.fig.canvas.draw()
+                                #simulacion.fig.canvas.flush_events()
 
-                                    else:
-                                        # print("SIR debajo del umbral")
-                                        simulacion.contadorBloqueoXSIR[celda_a_posicionar] = simulacion.contadorBloqueoXSIR[celda_a_posicionar] + 1
-                                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='g',
-                                                              alpha=1, marker='.')
-                                        # Animación de la simulacion
-                                        simulacion.fig.canvas.draw()
-                                        simulacion.fig.canvas.flush_events()
-                                    break
-
-                        elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
-
-                            #print("No hay suficientes recursos")
-                            simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
-                            simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,
-                                                  marker='.')
+                        else:
+                            # print("SIR debajo del umbral")
+                            simulacion.contadorBloqueoXSIR[celda_a_posicionar] = simulacion.contadorBloqueoXSIR[
+                                                                           celda_a_posicionar] + 1
+                            simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='g',
+                                                  alpha=1, marker='.')
                             # Animación de la simulacion
-                            simulacion.fig.canvas.draw()
-                            simulacion.fig.canvas.flush_events()
-
-
+                            #simulacion.fig.canvas.draw()
+                            #simulacion.fig.canvas.flush_events()
 
 
                     else:
@@ -278,7 +290,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         beta_fwd=cmth.polar(aux_01)[1]
                         d_I_fwd=cmth.polar(aux_01)[0]
 
-                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker='.')
+                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker=',')
                         # Animación de la simulacion
                         simulacion.fig.canvas.draw()
                         simulacion.fig.canvas.flush_events()
@@ -299,7 +311,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                             #print("No hay suficientes recursos")
                             simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
                             simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=1,
-                                                  marker='.')
+                                                  marker=',')
                             # Animación de la simulacion
                             simulacion.fig.canvas.draw()
                             simulacion.fig.canvas.flush_events()
@@ -328,8 +340,8 @@ def calendarizarSalida(entorno, usuario, simulacion):
                 simulacion.ax.scatter(auxx, auxy, c='k', alpha=0.7,
                                       marker='_')
                 # Animación de la simulacion
-                simulacion.fig.canvas.draw()
-                simulacion.fig.canvas.flush_events()
+                #simulacion.fig.canvas.draw()
+                #simulacion.fig.canvas.flush_events()
 
                 # Identificar a usuario como muerto
                 usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][3] = True
@@ -363,7 +375,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 # Inicialización de la simulación
 entorno = simpy.Environment()
 #Lambda = float(sys.argv[1])
-Lambda = 100
+Lambda = 5
 #Lambda = 22
 
 Mu = 1
@@ -375,7 +387,7 @@ estacionesbase = EstacionBase(entorno, 70)
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
 #simulacion.umbralArribos = int(sys.argv[2])
-simulacion.umbralArribos = 1000
+simulacion.umbralArribos = 500
 #simulacion.umbralArribos = 15000
 
 terminarSimulacion = simpy.events.Event(entorno)
@@ -383,6 +395,6 @@ terminarSimulacion = simpy.events.Event(entorno)
 entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
 entorno.run(until=terminarSimulacion)
 
-simulacion.probabilidad_Bloqueo = (simulacion.contadorBloqueoXRecurso[0] + simulacion.contadorBloqueoXSIR[0] )/ simulacion.countLlegadas[0]
-simulacion.probabilidad_Bloqueo_SIR = simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]
-print(simulacion.probabilidad_Bloqueo,",",simulacion.probabilidad_Bloqueo_SIR)
+simulacion.probabilidad_Outage = (simulacion.contadorBloqueoXSIR[0]) / simulacion.countLlegadas[0]
+simulacion.probabilidad_rechazo = (simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]) + (simulacion.contadorBloqueoXRecurso[0] / (simulacion.countLlegadas[0] - simulacion.contadorBloqueoXSIR[0]))
+print(simulacion.probabilidad_Outage, ",", simulacion.probabilidad_rechazo)
