@@ -213,7 +213,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
 
 
-                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, marker='.')
+                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, s=5,marker="$.$")
                         #Animación de la simulacion
                         d_I_fwd=[]
                         co_ch_user_position = []
@@ -223,7 +223,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                  co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
                             aux_01 = complex(co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1])
                             d_I_fwd.append(cmth.polar(aux_01)[0])
-                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,marker='.')
+                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,s=5,marker="$.$")
 
                         #simulacion.fig.canvas.draw()
                         #simulacion.fig.canvas.flush_events()
@@ -259,8 +259,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                 # print("No hay suficientes recursos")
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = \
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
-                                simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,
-                                                      marker='.')
+                                simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,s=25,
+                                                      marker=".",edgecolors='none')
                                 # Animación de la simulacion
                                 #simulacion.fig.canvas.draw()
                                 #simulacion.fig.canvas.flush_events()
@@ -269,8 +269,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                             # print("SIR debajo del umbral")
                             simulacion.contadorBloqueoXSIR[celda_a_posicionar] = simulacion.contadorBloqueoXSIR[
                                                                            celda_a_posicionar] + 1
-                            simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='g',
-                                                  alpha=1, marker='.')
+                            simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='#ccff00',
+                                                  alpha=1,s=25, marker=".")
                             # Animación de la simulacion
                             #simulacion.fig.canvas.draw()
                             #simulacion.fig.canvas.flush_events()
@@ -290,7 +290,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         beta_fwd=cmth.polar(aux_01)[1]
                         d_I_fwd=cmth.polar(aux_01)[0]
 
-                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker=',')
+                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker="$.$")
                         # Animación de la simulacion
                         simulacion.fig.canvas.draw()
                         simulacion.fig.canvas.flush_events()
@@ -311,7 +311,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                             #print("No hay suficientes recursos")
                             simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
                             simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=1,
-                                                  marker=',')
+                                                  marker="$.$")
                             # Animación de la simulacion
                             simulacion.fig.canvas.draw()
                             simulacion.fig.canvas.flush_events()
@@ -337,8 +337,8 @@ def calendarizarSalida(entorno, usuario, simulacion):
                 # Quitar usuario del plano
                 auxx=usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][0]
                 auxy=usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][1]
-                simulacion.ax.scatter(auxx, auxy, c='k', alpha=0.7,
-                                      marker='_')
+                #simulacion.ax.scatter(auxx, auxy, c='k', alpha=0.7,
+                #                      marker='_')
                 # Animación de la simulacion
                 #simulacion.fig.canvas.draw()
                 #simulacion.fig.canvas.flush_events()
@@ -375,7 +375,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 # Inicialización de la simulación
 entorno = simpy.Environment()
 #Lambda = float(sys.argv[1])
-Lambda = 5
+Lambda = 20
 #Lambda = 22
 
 Mu = 1
