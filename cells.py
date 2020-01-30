@@ -65,8 +65,8 @@ class Simulacion(object):
     probabilidad_Outage = 0
     probabilidad_rechazo = 0
     # Creación de figura a plotear
-    fig, ax = plt.subplots(1)
-    ax.set_aspect('equal')
+    #fig, ax = plt.subplots(1)
+    #ax.set_aspect('equal')
 
 
 def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
@@ -74,7 +74,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
     # Tamaño del cluster
     cluster_size = 7# 1, 3, 4 o 7 celdas
     # Radio de la celda
-    r_cell = 1000
+    r_cell = 12900
     #r_cell_plot= r_cell/200
     #  Sectorización (1 -> 60 grados, 2 -> 120 grados, 3 -> omnidireccional)
     sec = 3
@@ -110,51 +110,51 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
         estacionesbase.ListaEstacionesBase.append([i, bs_position[i], 0, [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]])
 
 
-#
+
     ## CREACIÓN DE HEXÁGONOS
     ## Se forma y dibuja el hexágono central en x=0, y=0 en color azul, esta es la célula a analizar
-    hex = RegularPolygon((0, 0), numVertices=6, radius=r_cell, orientation=np.radians(30), facecolor="blue", alpha=0.2,
-                         edgecolor='k')
-    simulacion.ax.add_patch(hex) # se dibuja el hexagono
-    # Se dibuja un punto negro representando a la estación base
-    simulacion.ax.scatter(0, 0, c='k', alpha=0.5, marker='1')
-
-    if cluster_size == 4:
-        for j in range(0, len(aux1)):
-            # Se forman y dibujan los hexágonos del primer anillo de interferencia en color rojo
-            hex = RegularPolygon((bs_position[j][0], bs_position[j][1]), numVertices=6, radius=r_cell,
-                                 orientation=np.radians(30), facecolor="red", alpha=0.2, edgecolor='k')
-            hex3 = RegularPolygon((bs_position3[j][0], bs_position3[j][1]), numVertices=6, radius=r_cell,
-                                 orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
-            hex1 = RegularPolygon((bs_position[j][0] / 2, bs_position[j][1] / 2), numVertices=6, radius=r_cell,
-                                orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
-            simulacion.ax.add_patch(hex)
-            simulacion.ax.add_patch(hex3)
-            simulacion.ax.add_patch(hex1)
-            # Se dibuja un punto negro representando a la estación base en cada celda
-            simulacion.ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5, marker='1')
-            simulacion.ax.scatter(bs_position3[j][0], bs_position3[j][1], c='k', alpha=0.5, marker='1')
-            simulacion.ax.scatter(bs_position[j][0]/2, bs_position[j][1]/2, c='k', alpha=0.5, marker='1')
-    elif cluster_size == 7:
-        for j in range(0, len(aux1)):
-            # Se forman y dibujan los hexágonos del primer anillo de interferencia en color rojo
-            hex = RegularPolygon((bs_position[j][0], bs_position[j][1]), numVertices=6, radius=r_cell,
-                                 orientation=np.radians(30), facecolor="red", alpha=0.2, edgecolor='k')
-            hex3 = RegularPolygon((bs_position3[j][0], bs_position3[j][1]), numVertices=6, radius=r_cell,
-                                 orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
-            hex4 = RegularPolygon((bs_position4[j][0], bs_position4[j][1]), numVertices=6, radius=r_cell,
-                                  orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
-            hex1 = RegularPolygon((bs_position4[j][0] / 2, bs_position4[j][1] / 2), numVertices=6, radius=r_cell,
-                                orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
-            simulacion.ax.add_patch(hex)
-            simulacion.ax.add_patch(hex3)
-            simulacion.ax.add_patch(hex1)
-            simulacion.ax.add_patch(hex4)
-            # Se dibuja un punto negro representando a la estación base en cada celda
-            simulacion.ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5, marker='1')
-            simulacion.ax.scatter(bs_position3[j][0], bs_position3[j][1], c='k', alpha=0.5, marker='1')
-            simulacion.ax.scatter(bs_position4[j][0], bs_position4[j][1], c='k', alpha=0.5, marker='1')
-            simulacion.ax.scatter(bs_position4[j][0]/2, bs_position4[j][1]/2, c='k', alpha=0.5, marker='1')
+    #hex = RegularPolygon((0, 0), numVertices=6, radius=r_cell, orientation=np.radians(30), facecolor="blue", alpha=0.2,
+    #                     edgecolor='k')
+    #simulacion.ax.add_patch(hex) # se dibuja el hexagono
+    ## Se dibuja un punto negro representando a la estación base
+    #simulacion.ax.scatter(0, 0, c='k', alpha=0.5, marker='1')
+#
+    #if cluster_size == 4:
+    #    for j in range(0, len(aux1)):
+    #        # Se forman y dibujan los hexágonos del primer anillo de interferencia en color rojo
+    #        hex = RegularPolygon((bs_position[j][0], bs_position[j][1]), numVertices=6, radius=r_cell,
+    #                             orientation=np.radians(30), facecolor="red", alpha=0.2, edgecolor='k')
+    #        hex3 = RegularPolygon((bs_position3[j][0], bs_position3[j][1]), numVertices=6, radius=r_cell,
+    #                             orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
+    #        hex1 = RegularPolygon((bs_position[j][0] / 2, bs_position[j][1] / 2), numVertices=6, radius=r_cell,
+    #                            orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
+    #        simulacion.ax.add_patch(hex)
+    #        simulacion.ax.add_patch(hex3)
+    #        simulacion.ax.add_patch(hex1)
+    #        # Se dibuja un punto negro representando a la estación base en cada celda
+    #        simulacion.ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5, marker='1')
+    #        simulacion.ax.scatter(bs_position3[j][0], bs_position3[j][1], c='k', alpha=0.5, marker='1')
+    #        simulacion.ax.scatter(bs_position[j][0]/2, bs_position[j][1]/2, c='k', alpha=0.5, marker='1')
+    #elif cluster_size == 7:
+    #    for j in range(0, len(aux1)):
+    #        # Se forman y dibujan los hexágonos del primer anillo de interferencia en color rojo
+    #        hex = RegularPolygon((bs_position[j][0], bs_position[j][1]), numVertices=6, radius=r_cell,
+    #                             orientation=np.radians(30), facecolor="red", alpha=0.2, edgecolor='k')
+    #        hex3 = RegularPolygon((bs_position3[j][0], bs_position3[j][1]), numVertices=6, radius=r_cell,
+    #                             orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
+    #        hex4 = RegularPolygon((bs_position4[j][0], bs_position4[j][1]), numVertices=6, radius=r_cell,
+    #                              orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
+    #        hex1 = RegularPolygon((bs_position4[j][0] / 2, bs_position4[j][1] / 2), numVertices=6, radius=r_cell,
+    #                            orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
+    #        simulacion.ax.add_patch(hex)
+    #        simulacion.ax.add_patch(hex3)
+    #        simulacion.ax.add_patch(hex1)
+    #        simulacion.ax.add_patch(hex4)
+    #        # Se dibuja un punto negro representando a la estación base en cada celda
+    #        simulacion.ax.scatter(bs_position[j][0], bs_position[j][1], c='k', alpha=0.5, marker='1')
+    #        simulacion.ax.scatter(bs_position3[j][0], bs_position3[j][1], c='k', alpha=0.5, marker='1')
+    #        simulacion.ax.scatter(bs_position4[j][0], bs_position4[j][1], c='k', alpha=0.5, marker='1')
+    #        simulacion.ax.scatter(bs_position4[j][0]/2, bs_position4[j][1]/2, c='k', alpha=0.5, marker='1')
     #for j in range(0, len(aux1)):
     #    # Se forman y dibujan los hexágonos que rodean al anillo central a manera de referencia en color verde
     #    hex = RegularPolygon((bs_position[j][0] / 2, bs_position[j][1]/2), numVertices=6, radius=r_cell,
@@ -213,7 +213,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
 
 
-                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, marker='.')
+                        #simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, marker='.')
                         #Animación de la simulacion
                         d_I_fwd=[]
                         co_ch_user_position = []
@@ -223,7 +223,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                  co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
                             aux_01 = complex(co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1])
                             d_I_fwd.append(cmth.polar(aux_01)[0])
-                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,marker='.')
+                            #simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,marker='.')
 
                         #simulacion.fig.canvas.draw()
                         #simulacion.fig.canvas.flush_events()
@@ -259,8 +259,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                 # print("No hay suficientes recursos")
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = \
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
-                                simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,
-                                                      marker='.')
+                                #simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,
+                                #                      marker='.')
                                 # Animación de la simulacion
                                 #simulacion.fig.canvas.draw()
                                 #simulacion.fig.canvas.flush_events()
@@ -269,8 +269,8 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                             # print("SIR debajo del umbral")
                             simulacion.contadorBloqueoXSIR[celda_a_posicionar] = simulacion.contadorBloqueoXSIR[
                                                                            celda_a_posicionar] + 1
-                            simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='g',
-                                                  alpha=1, marker='.')
+                            #simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='g',
+                            #                     alpha=1, marker='.')
                             # Animación de la simulacion
                             #simulacion.fig.canvas.draw()
                             #simulacion.fig.canvas.flush_events()
@@ -290,10 +290,10 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         beta_fwd=cmth.polar(aux_01)[1]
                         d_I_fwd=cmth.polar(aux_01)[0]
 
-                        simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker=',')
+                        #simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='b', alpha=1,marker=',')
                         # Animación de la simulacion
-                        simulacion.fig.canvas.draw()
-                        simulacion.fig.canvas.flush_events()
+                        #simulacion.fig.canvas.draw()
+                        #simulacion.fig.canvas.flush_events()
 
                         usuario.ListaUsuariosMoviles.append([simulacion.Llegadas[i].value, celda_a_posicionar, co_ch_user_position, False])
                         # Verificar si hay disponibilidad
@@ -310,11 +310,11 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         elif estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] == usuario.capacidadRecurso:
                             #print("No hay suficientes recursos")
                             simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
-                            simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=1,
-                                                  marker=',')
-                            # Animación de la simulacion
-                            simulacion.fig.canvas.draw()
-                            simulacion.fig.canvas.flush_events()
+                            #simulacion.ax.scatter(co_ch_user_position[0], co_ch_user_position[1], c='r', alpha=1,
+                            #                      marker=',')
+                            ## Animación de la simulacion
+                            #simulacion.fig.canvas.draw()
+                            #simulacion.fig.canvas.flush_events()
 
 
                     del simulacion.Llegadas[i]
