@@ -64,22 +64,23 @@ class Simulacion(object):
     Salidas= []
     probabilidad_Outage = 0
     probabilidad_rechazo = 0
+    ListaSIR = []
     # Creación de figura a plotear
     #fig, ax = plt.subplots(1)
     #ax.set_aspect('equal')
 
 
-def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
+def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion, cluster_size, apd):
 
     # Tamaño del cluster
-    cluster_size = 7# 1, 3, 4 o 7 celdas
+    #cluster_size = 7# 1, 3, 4 o 7 celdas
     # Radio de la celda
-    r_cell = 12900
+    r_cell = 1000
     #r_cell_plot= r_cell/200
     #  Sectorización (1 -> 60 grados, 2 -> 120 grados, 3 -> omnidireccional)
     sec = 3
     num_celdas = 6  # Tomando en cuenta el cero
-    apd=4
+    #apd=4
 
     # Ubicación de las estaciones base (la celda central se encuentra en x=0 y y=0)
     # Ubicación (angular) de la célda co-canal de cada cluster del primer anillo de interferencia
@@ -240,8 +241,9 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                 I_sig = I_sig + distaux ** (-apd)
                         if I_sig > 0:
                             calculoSIR = 10 * mth.log10(des_sig / I_sig)
+                            simulacion.ListaSIR.append(calculoSIR)
                         else:
-                            calculoSIR = 10 * mth.log10(des_sig / I_sig)
+                            calculoSIR = 100000
 
                         if calculoSIR > simulacion.umbralSIR:
                             if estacionesbase.ListaEstacionesBase[celda_a_posicionar][2] < usuario.capacidadRecurso:
@@ -337,8 +339,8 @@ def calendarizarSalida(entorno, usuario, simulacion):
                 # Quitar usuario del plano
                 auxx=usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][0]
                 auxy=usuario.ListaUsuariosMoviles[simulacion.Salidas[i].value][2][1]
-                simulacion.ax.scatter(auxx, auxy, c='k', alpha=0.7,
-                                      marker='_')
+                #simulacion.ax.scatter(auxx, auxy, c='k', alpha=0.7,
+                #                      marker='_')
                 # Animación de la simulacion
                 #simulacion.fig.canvas.draw()
                 #simulacion.fig.canvas.flush_events()
@@ -374,8 +376,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 
 # Inicialización de la simulación
 entorno = simpy.Environment()
-#Lambda = float(sys.argv[1])
-Lambda = 5
+Lambda = 40
 #Lambda = 22
 
 Mu = 1
@@ -386,15 +387,18 @@ estacionesbase = EstacionBase(entorno, 70)
 
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
-#simulacion.umbralArribos = int(sys.argv[2])
-simulacion.umbralArribos = 500
+simulacion.umbralArribos = int(sys.argv[2])
+#simulacion.umbralArribos = 500
 #simulacion.umbralArribos = 15000
 
 terminarSimulacion = simpy.events.Event(entorno)
 
-entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion))
+cluster_size=int(sys.argv[1])
+apd=4
+
+entorno.process(simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion,cluster_size,apd))
 entorno.run(until=terminarSimulacion)
 
-simulacion.probabilidad_Outage = (simulacion.contadorBloqueoXSIR[0]) / simulacion.countLlegadas[0]
-simulacion.probabilidad_rechazo = (simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]) + (simulacion.contadorBloqueoXRecurso[0] / (simulacion.countLlegadas[0] - simulacion.contadorBloqueoXSIR[0]))
-print(simulacion.probabilidad_Outage, ",", simulacion.probabilidad_rechazo)
+#simulacion.probabilidad_Outage = (simulacion.contadorBloqueoXSIR[0]) / simulacion.countLlegadas[0]
+#simulacion.probabilidad_rechazo = (simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]) + (simulacion.contadorBloqueoXRecurso[0] / (simulacion.countLlegadas[0] - simulacion.contadorBloqueoXSIR[0]))
+print(simulacion.probabilidad_Outage, ",", sum(simulacion.ListaSIR)/len(simulacion.ListaSIR))
