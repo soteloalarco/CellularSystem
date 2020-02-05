@@ -57,7 +57,7 @@ class Simulacion(object):
     contadorBloqueoXRecurso = np.zeros(7)
     contadorBloqueoXSIR = np.zeros(7)
     umbralArribos = 0 # Número de arribos a simular (CONDICIÓN DE PARO)
-    umbralSIR= 16
+    umbralSIR= 18
     # Lista de eventos de las llegadas de usuarios
     Llegadas= []
     # Lista de eventos de las salidas de usuarios
@@ -68,6 +68,10 @@ class Simulacion(object):
     fig, ax = plt.subplots(1)
     ax.set_aspect('equal')
 
+    contador14 = 0
+    contador12 = 0
+    contador34 = 0
+    contador56 = 0
 
 def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, terminarSimulacion):
 
@@ -80,6 +84,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
     sec = 3
     num_celdas = 6  # Tomando en cuenta el cero
     apd=4
+
 
     # Ubicación de las estaciones base (la celda central se encuentra en x=0 y y=0)
     # Ubicación (angular) de la célda co-canal de cada cluster del primer anillo de interferencia
@@ -202,6 +207,20 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                         des_user_beta = np.random.uniform(0, 1) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
                         # Distancia de la estación base al usuario
                         des_user_r = mth.sqrt(np.random.uniform(0, 1) * (r_cell ** 2))
+
+                        if des_user_r > r_cell * 0.25:
+                            if des_user_r > r_cell * 0.5:
+                                if des_user_r > r_cell * 0.75:
+                                    if des_user_r > r_cell * 0.8333333:
+                                        simulacion.contador56 = simulacion.contador56
+                                    else:
+                                        simulacion.contador56 = simulacion.contador56 + 1
+                                else:
+                                    simulacion.contador34 = simulacion.contador34 + 1
+                            else:
+                                simulacion.contador12 = simulacion.contador12 + 1
+                        else:
+                            simulacion.contador14 = simulacion.contador14 + 1
 
 
                         co_ch_user_beta = np.random.uniform(0, 1, 6) * phi_BW[sec - 1] + phi_center[sec - 1][sector - 1]
@@ -375,7 +394,7 @@ def condiciondeParo(terminarSimulacion, simulacion):
 # Inicialización de la simulación
 entorno = simpy.Environment()
 #Lambda = float(sys.argv[1])
-Lambda = 20
+Lambda = 12
 #Lambda = 22
 
 Mu = 1
@@ -397,4 +416,16 @@ entorno.run(until=terminarSimulacion)
 
 simulacion.probabilidad_Outage = (simulacion.contadorBloqueoXSIR[0]) / simulacion.countLlegadas[0]
 simulacion.probabilidad_rechazo = (simulacion.contadorBloqueoXSIR[0] / simulacion.countLlegadas[0]) + (simulacion.contadorBloqueoXRecurso[0] / (simulacion.countLlegadas[0] - simulacion.contadorBloqueoXSIR[0]))
+relacionA56=(simulacion.contador14+simulacion.contador12+simulacion.contador34+simulacion.contador56)/simulacion.countLlegadas[0]
+relacionA34=(simulacion.contador14+simulacion.contador12+simulacion.contador34)/simulacion.countLlegadas[0]
+relacionA12=(simulacion.contador14+simulacion.contador12)/simulacion.countLlegadas[0]
+relacionA14=(simulacion.contador14)/simulacion.countLlegadas[0]
+
+print("Probabilidad de bloqueo por SIR , Probabilidad de bloqueo Total")
 print(simulacion.probabilidad_Outage, ",", simulacion.probabilidad_rechazo)
+print("-------------Relaciones de densidad de puntos y áreas---------------")
+print("-------------Puntos           ,   Área")
+print("A 5/6 radio:", relacionA56, ", 0.69444")
+print("A 3/4 radio:", relacionA34, ", 0.5625")
+print("A 1/2 radio:", relacionA12, ", 0.25")
+print("A 1/4 radio:", relacionA14, ", 0.0625")
