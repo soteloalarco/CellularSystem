@@ -57,7 +57,7 @@ class Simulacion(object):
     contadorBloqueoXRecurso = np.zeros(7)
     contadorBloqueoXSIR = np.zeros(7)
     umbralArribos = 0 # Número de arribos a simular (CONDICIÓN DE PARO)
-    umbralSIR= 18
+    umbralSIR= 16
     # Lista de eventos de las llegadas de usuarios
     Llegadas= []
     # Lista de eventos de las salidas de usuarios
@@ -145,7 +145,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
             hex4 = RegularPolygon((bs_position4[j][0], bs_position4[j][1]), numVertices=6, radius=r_cell,
                                   orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='k')
             hex1 = RegularPolygon((bs_position4[j][0] / 2, bs_position4[j][1] / 2), numVertices=6, radius=r_cell,
-                                orientation=np.radians(30), facecolor="green", alpha=0.1, edgecolor='g')
+                                orientation=np.radians(30), facecolor="green", alpha=0.2, edgecolor='g')
             simulacion.ax.add_patch(hex)
             simulacion.ax.add_patch(hex3)
             simulacion.ax.add_patch(hex1)
@@ -213,7 +213,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
 
 
 
-                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, s=5,marker="$.$")
+                        simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='b', alpha=1, s=25,marker=".")
                         #Animación de la simulacion
                         d_I_fwd=[]
                         co_ch_user_position = []
@@ -223,7 +223,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                  co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1]])
                             aux_01 = complex(co_ch_user_r[j] * np.cos(co_ch_user_beta[j]) + bs_position[j][0], co_ch_user_r[j] * np.sin(co_ch_user_beta[j]) + bs_position[j][1])
                             d_I_fwd.append(cmth.polar(aux_01)[0])
-                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='b', alpha=1 ,s=5,marker="$.$")
+                            simulacion.ax.scatter(co_ch_user_position[j][0], co_ch_user_position[j][1], c='k', alpha=1 ,s=25,marker=".")
 
                         #simulacion.fig.canvas.draw()
                         #simulacion.fig.canvas.flush_events()
@@ -260,7 +260,7 @@ def simulacionEventosDiscretos(entorno, usuario, simulacion, estacionesbase, ter
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] = \
                                 simulacion.contadorBloqueoXRecurso[celda_a_posicionar] + 1
                                 simulacion.ax.scatter(des_user_position[0], des_user_position[1], c='r', alpha=1,s=25,
-                                                      marker=".",edgecolors='none')
+                                                      marker=".")
                                 # Animación de la simulacion
                                 #simulacion.fig.canvas.draw()
                                 #simulacion.fig.canvas.flush_events()
@@ -387,7 +387,7 @@ estacionesbase = EstacionBase(entorno, 70)
 # Creacion de objeto clase Simulación
 simulacion = Simulacion()
 #simulacion.umbralArribos = int(sys.argv[2])
-simulacion.umbralArribos = 500
+simulacion.umbralArribos = 3000
 #simulacion.umbralArribos = 15000
 
 terminarSimulacion = simpy.events.Event(entorno)
